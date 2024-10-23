@@ -1,0 +1,347 @@
+<header>
+    <nav>
+        <div>
+            <a href="/">TechShop</a>
+            <a href="/laptops">Laptops</a>
+            <a href="/deals">Deals</a>
+            <a href="/support">Support</a>
+        </div>
+        <div class="cart-icon">
+            <a href="/cart">Cart <span class="cart-count">0</span></a>
+        </div>
+    </nav>
+</header>
+  <style>
+           /* Header styles */
+        header {
+            background-color: #2c5282;
+            color: white;
+            padding: 1rem;
+        }
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+        }
+        nav a:hover {
+            background-color: #2a4365;
+            border-radius: 4px;
+        }
+        .cart-icon {
+            position: relative;
+        }
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #e53e3e;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+        }
+
+        /* Main content styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .product-image {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .product-details h1 {
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .price {
+            font-size: 2rem;
+            color: #2c5282;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+        .deal-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        .good-deal {
+            background-color: #c6f6d5;
+            color: #2f855a;
+        }
+        .bad-deal {
+            background-color: #fed7d7;
+            color: #c53030;
+        }
+        .buy-section {
+            margin: 2rem 0;
+        }
+        .buy-button {
+            background-color: #2c5282;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.125rem;
+            transition: background-color 0.2s;
+        }
+        .buy-button:hover {
+            background-color: #2a4365;
+        }
+        
+        /* Specs table styles */
+        .specs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+        }
+        .specs-table th,
+        .specs-table td {
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+        }
+        .specs-table th {
+            background-color: #f8fafc;
+            text-align: left;
+            width: 30%;
+        }
+        
+        /* Reviews styles */
+        .reviews {
+            margin-top: 3rem;
+        }
+        .overall-rating {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background-color: #f8fafc;
+            border-radius: 8px;
+        }
+        .rating-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #2c5282;
+        }
+        .stars {
+            color: #f6e05e;
+            font-size: 1.25rem;
+        }
+        .review {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1.5rem 0;
+        }
+        .review-meta {
+            margin-bottom: 0.5rem;
+        }
+        .review-title {
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+        .review-date {
+            color: #718096;
+            float: right;
+        }
+        
+        /* Footer styles */
+        footer {
+            background-color: #2d3748;
+            color: white;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+        }
+        .footer-content h3 {
+            margin-top: 0;
+        }
+        .footer-content ul {
+            list-style: none;
+            padding: 0;
+        }
+        .footer-content a {
+            color: #cbd5e0;
+            text-decoration: none;
+        }
+        .footer-content a:hover {
+            color: white;
+        }
+    </style>
+
+
+<main class="container">
+    <div class="product-grid">
+        <div class="product-image-container">
+            <img src="/api/placeholder/600/400" alt="Lenovo IdeaPad" class="product-image">
+        </div>
+        <div class="product-details">
+            <h1>Lenovo IdeaPad 3 (2024) <span class="deal-badge">Entry Level</span></h1>
+            <p class="price">$599</p>
+            <p>Budget-friendly laptop for everyday computing needs. Features Ryzen 3 processor and essential connectivity options. Perfect for students and casual users looking for reliable performance at an affordable price.</p>
+            <div class="buy-section">
+                <button class="buy-button">Add to Cart</button>
+            </div>
+            <ul>
+                <li>Free standard shipping</li>
+                <li>1-year manufacturer warranty</li>
+                <li>30-day return policy</li>
+                <li>Lenovo Vantage software included</li>
+                <li>Basic laptop sleeve included</li>
+            </ul>
+        </div>
+    </div>
+
+    <section>
+        <h2>Specifications</h2>
+        <table class="specs-table">
+            <tr>
+                <th>Processor</th>
+                <td>AMD Ryzen 3 7320U (4 cores, up to 4.1 GHz)</td>
+            </tr>
+            <tr>
+                <th>RAM</th>
+                <td>8GB DDR4-3200 (Soldered)</td>
+            </tr>
+            <tr>
+                <th>Storage</th>
+                <td>256GB PCIe NVMe SSD</td>
+            </tr>
+            <tr>
+                <th>Graphics</th>
+                <td>AMD Radeon Graphics</td>
+            </tr>
+            <tr>
+                <th>Display</th>
+                <td>15.6" FHD (1920 x 1080) TN, 220 nits</td>
+            </tr>
+            <tr>
+                <th>Battery</th>
+                <td>45WHr</td>
+            </tr>
+            <tr>
+                <th>Weight</th>
+                <td>3.74 lbs (1.7 kg)</td>
+            </tr>
+            <tr>
+                <th>Webcam</th>
+                <td>720p with Privacy Shutter</td>
+            </tr>
+            <tr>
+                <th>Ports</th>
+                <td>2x USB 3.1, 1x USB-C, HDMI, SD card reader</td>
+            </tr>
+        </table>
+    </section>
+
+    <section class="reviews">
+        <h2>Customer Reviews</h2>
+        <div class="overall-rating">
+            <div class="rating-number">3.6</div>
+            <div class="rating-summary">
+                <div class="stars">★★★★☆</div>
+                <div>Based on 284 reviews</div>
+            </div>
+        </div>
+
+        <div class="review">
+            <div class="stars">★★★★☆</div>
+            <div class="review-meta">
+                <span class="review-title">Good Budget Option</span>
+                <span class="review-date">March 15, 2024</span>
+            </div>
+            <p>For the price, it's a decent laptop. Handles basic tasks like web browsing, Microsoft Office, and video streaming without issues. The build quality is plastic but feels sturdy enough. Battery life is acceptable at around 6 hours.</p>
+            <small>- Steve R., Verified Buyer</small>
+        </div>
+
+        <div class="review">
+            <div class="stars">★★★☆☆</div>
+            <div class="review-meta">
+                <span class="review-title">Basic Performance</span>
+                <span class="review-date">March 12, 2024</span>
+            </div>
+            <p>You get what you pay for. The display isn't very bright and viewing angles aren't great. Performance is okay for basic tasks, but don't expect to do any heavy multitasking. Good starter laptop for students on a budget.</p>
+            <small>- Amy L., Verified Buyer</small>
+        </div>
+
+        <div class="review">
+            <div class="stars">★★★★☆</div>
+            <div class="review-meta">
+                <span class="review-title">Value for Money</span>
+                <span class="review-date">March 8, 2024</span>
+            </div>
+            <p>Perfect for my kid's online classes. The privacy shutter on the webcam is a nice touch, and the keyboard is comfortable for typing. The SD card reader comes in handy, and the included sleeve is a bonus at this price point.</p>
+            <small>- Mark H., Verified Buyer</small>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="footer-content">
+        <div>
+            <h3>About TechShop</h3>
+            <ul>
+                <li><a href="/about">About Us</a></li>
+                <li><a href="/careers">Careers</a></li>
+                <li><a href="/press">Press</a></li>
+            </ul>
+        </div>
+        <div>
+            <h3>Customer Service</h3>
+            <ul>
+                <li><a href="/contact">Contact Us</a></li>
+                <li><a href="/shipping">Shipping Info</a></li>
+                <li><a href="/returns">Returns</a></li>
+            </ul>
+        </div>
+        <div>
+            <h3>Policies</h3>
+            <ul>
+                <li><a href="/privacy">Privacy Policy</a></li>
+                <li><a href="/terms">Terms of Service</a></li>
+                <li><a href="/warranty">Warranty</a></li>
+            </ul>
+        </div>
+        <div>
+            <h3>Connect</h3>
+            <ul>
+                <li><a href="/newsletter">Newsletter</a></li>
+                <li><a href="/social">Social Media</a></li>
+                <li><a href="/blog">Blog</a></li>
+            </ul>
+        </div>
+    </div>
+</footer>
