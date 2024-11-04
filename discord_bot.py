@@ -1,10 +1,15 @@
 import os
 from dotenv import load_dotenv
+import discord
 from discord.ext import commands
 
 
 def main():
-    bot = commands.Bot(command_prefix='/', description='A simple Discord bot')
+    intents = discord.intents.default()
+    bot = commands.Bot(
+        intents=intents,
+        command_prefix='/',
+        description='A simple Discord bot')
 
     load_dotenv()
     token = os.getenv('BOT_TOKEN')
