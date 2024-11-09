@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Command to run
-COMMAND="~/ls-venv/bin/python ./discord_bot.py"
+COMMAND="/home/andrewsenth/ls-venv/bin/python /home/andrewsenth/LaptopShopper/discord_bot.py"
 
 # Function to run the command
 run_command() {
