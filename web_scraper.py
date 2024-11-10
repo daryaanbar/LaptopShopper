@@ -1,5 +1,11 @@
 from bs4 import BeautifulSoup
 import glob
+from textblob import TextBlob
+import spacy
+from collections import defaultdict
+import numpy as np
+from typing import List, Dict
+import re
 
 # function to parse each HTML file
 def parse_laptop_file(file_path: str) -> dict:
@@ -38,7 +44,7 @@ def parse_laptop_file(file_path: str) -> dict:
             'overall_rating': overall_rating,
             'reviews': reviews
         }
-    
+'''    
 # function to summarize the data
 def summarize_data(data):
     summary = []
@@ -67,17 +73,125 @@ def summarize_data(data):
         summary.append(laptop_summary)
     
     return "\n".join(summary)
+'''    
+class LaptopSummarizer:
+    def __init__(self):
+        self.nlp = spacy.load('en_core_web_sm')
 
+    def get_key_specs(self, specs: Dict) -> Dict:
+        #extracting key specifications
+        key_specs ={
+            'Performance': [],
+            'Display': [],
+            'Storage': [],
+            'Other': []
+        }
+        for key, value in specs.items():
+            if any(term in key.lower() for term in ['processor', 'cpu', 'graphics', 'gpu']):
+                key_specs['Performance'].append(f"{key}: {value}")
+            elif any(term in key.lower() for term in ['display', 'screen']):
+                key_specs['Display'].append(f"{key}: {value}")
+            elif any(term in key.lower() for term in ['storage', 'ram', 'memory']):
+                key_specs['Storage'].append(f"{key}: {value}")
+            else:
+                key_specs['Other'].append(f"{key}: {value}")
+        return key_specs
 
+    def analyze_reviews(self, reviews: List[Dict]) -> Dict:
+        #Analyzing reviews with key points using TextBlob
+        sentiments = []
+        key_points = {
+            'positive': [],
+            'negative': []
+        }
+
+        for review in reviews:
+            blob = TextBlob(review['text'])
+            sentiments.append(blob.sentiment.polarity)
+            
+            # Process each sentence
+            doc = self.nlp(review['text'])
+            for sent in doc.sents:
+                sent_blob = TextBlob(str(sent))
+                if sent_blob.sentiment.polarity > 0.3:
+                    key_points['positive'].append(str(sent))
+                elif sent_blob.sentiment.polarity < -0.3:
+                    key_points['negative'].append(str(sent))
+
+        return {
+            'average_sentiment': np.mean(sentiments),
+            'key_points': key_points
+        }
+
+    
+    def generate_summary(self, laptop_data: Dict) -> str:
+        #Generate summary 
+        # Extract price as float
+        price = float(re.sub(r'[^\d.]', '', laptop_data['price']))
+        
+        # Analyze specifications
+        key_specs = self.get_key_specs(laptop_data['specifications'])
+        
+        # Analyze reviews
+        review_analysis = self.analyze_reviews(laptop_data['reviews'])
+        
+        # Build summary
+        summary = []
+        
+        # Overview section
+        summary.append(f"--- {laptop_data['name']} Summary ---\n")
+        summary.append(f"Price: ${price:.2f}")
+        summary.append(f"Rating: {laptop_data['overall_rating']}/5.0")
+        summary.append(f"\nBrief Description:")
+        summary.append(laptop_data['description'])
+        
+        # Key Specifications
+        summary.append("\nKey Specifications:")
+        for category, specs in key_specs.items():
+            if specs:
+                summary.append(f"\n{category}:")
+                for spec in specs:
+                    summary.append(f"- {spec}")
+        
+        # Review Analysis
+        summary.append("\nReview Analysis:")
+        sentiment_text = ("Very Positive" if review_analysis['average_sentiment'] > 0.5 else
+                         "Positive" if review_analysis['average_sentiment'] > 0 else
+                         "Negative" if review_analysis['average_sentiment'] < -0.5 else
+                         "Slightly Negative")
+        summary.append(f"Overall Sentiment: {sentiment_text}")
+        
+        if review_analysis['key_points']['positive']:
+            summary.append("\nKey Positive Points:")
+            for point in review_analysis['key_points']['positive'][:2]:
+                summary.append(f"✓ {point}")
+                
+        if review_analysis['key_points']['negative']:
+            summary.append("\nKey Negative Points:")
+            for point in review_analysis['key_points']['negative'][:2]:
+                summary.append(f"✗ {point}")
+        
+        # Value Assessment
+        value_score = float(laptop_data['overall_rating']) / (price / 1000)
+        value_assessment = ("Excellent" if value_score > 4 else
+                          "Good" if value_score > 3 else
+                          "Fair" if value_score > 2 else
+                          "Poor")
+        
+        summary.append(f"\nValue Assessment: {value_assessment} value for money")
+        
+        return "\n".join(summary)
+        
 def main():
-    files = glob.glob("WebPages/*.html")  # path to html files
-    laptop_data = []
+    summarizer = LaptopSummarizer()
+    files = glob.glob("WebPages/*.html")
     
     for file_path in files:
-        laptop_data.append(parse_laptop_file(file_path))
-    
-    summary = summarize_data(laptop_data)
-    print("Laptops Summary:\n", summary)
+        laptop_data = parse_laptop_file(file_path)
+        summary = summarizer.generate_summary(laptop_data)
+        print(summary)
+        print("\n" + "-"*50 + "\n")
+
 
 
 if __name__ == "__main__":
