@@ -8,7 +8,7 @@ def main():
     intents = discord.Intents.default()
     bot = commands.Bot(
         intents=intents,
-        command_prefix='/',
+        command_prefix='..',
         description='A simple Discord bot')
 
     load_dotenv()
