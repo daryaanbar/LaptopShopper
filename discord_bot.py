@@ -6,7 +6,7 @@ from transformers import pipeline
 import torch
 
 
-MODEL_PATH = '/home/andrewsenth/.llama/checkpoints/Llama3.2-1B-Instruct'
+MODEL_PATH = '/home/andrewsenth/llama_model_hf'
 
 pipe = pipeline(
     "text-generation",
