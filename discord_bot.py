@@ -1,18 +1,14 @@
 import os
+import sys
 from dotenv import load_dotenv
 import discord
 from discord.ext import commands
 from transformers import pipeline
-import torch
 
-
-MODEL_PATH = '/home/andrewsenth/llama_model_hf'
 
 pipe = pipeline(
     "text-generation",
-    model=MODEL_PATH,
-    torch_dtype=torch.bfloat16,
-    device_map="auto"
+    model="meta-llama/Llama-3.2-1B-Instruct"
 )
 
 SYSTEM_PROMPT = """
@@ -53,6 +49,11 @@ token = os.getenv('BOT_TOKEN')
 @bot.command()
 async def ping(ctx):
     await ctx.send("pong")
+
+
+@bot.command()
+async def restart(_ctx):
+    os.execl(sys.executable, sys.executable, *sys.argv)
 
 
 @bot.event
