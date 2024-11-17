@@ -57,6 +57,8 @@ async def ping(ctx):
 
 @bot.event
 async def on_message(message):
+    await bot.process_commands(message)
+
     if (message.content.startswith('~')):
         await message.channel.send(make_response(message.content), reference=message)
 
