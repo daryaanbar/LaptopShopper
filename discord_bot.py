@@ -60,7 +60,10 @@ async def on_message(message):
     await bot.process_commands(message)
 
     if (message.content.startswith('~')):
-        await message.channel.send(make_response(message.content), reference=message)
+        try:
+            await message.channel.send(make_response(message.content), reference=message)
+        except Exception as e:
+            await message.channel.send(str(e), reference=message)
 
 
 bot.run(token)
