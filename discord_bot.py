@@ -91,7 +91,7 @@ async def restart(ctx):
         await ctx.send(str(e))
 
 
-def make_response(text: str, user_id: str):
+def make_response(text: str, user_id: str) -> str:
     message_structure = user_mem[user_id].chat_history
     message_structure.append({"role": "user", "content": text})
 
@@ -130,16 +130,12 @@ async def on_message(message):
         user_id = message.author.id
         channel_name = message.channel.name
 
-        if msg_content.startswith(COMMAND_PREFIX):
-            return
-
-        if user_id == bot.user.id:
-            return
-
-        if user_id not in user_mem:
-            return
-
-        if user_mem[user_id].channel_name != channel_name:
+        if (
+            msg_content.startswith(COMMAND_PREFIX) or
+            user_id == bot.user.id or
+            user_id not in user_mem or
+            user_mem[user_id].channel_name != channel_name
+        ):
             return
 
         await message.channel.send(make_response(msg_content, user_id), reference=message)
