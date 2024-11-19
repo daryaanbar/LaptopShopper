@@ -1,10 +1,16 @@
 import os
 import sys
+import time
+import threading
+from dataclasses import dataclass
 from dotenv import load_dotenv
 import discord
 from discord.ext import commands
 from transformers import pipeline
+import schedule
 
+
+# init LLM
 
 pipe = pipeline(
     "text-generation",
@@ -15,23 +21,47 @@ SYSTEM_PROMPT = """
     You are a discord bot meant to give laptop recommendations based
     on user input. You will ask for information about the user's needs
     and use cases as necessary to give the best recommendation possible.
+    Assume a user has just invoked you and is expecting an initial response
+    to get them started.
     """
 
 
-def make_response(text):
-    message_structure = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": text}
-    ]
+# init system memory
 
-    response_obj = pipe(
-        message_structure,
-        max_new_tokens=500
-    )
+@dataclass
+class UserData:
+    user_id: str
+    channel_name: str
+    last_updated: float
+    chat_history: list
 
-    response = response_obj[0]["generated_text"][-1]["content"]
-    return response
+user_mem: dict[str, UserData] = {}
 
+
+# periodically clear memory
+
+MAX_TIMEOUT = 600 #seconds
+
+def bg_task():
+    now = time.time()
+    user_mem = {
+        k: v for (k, v) in user_mem.entries()
+        if now - v.last_updated < MAX_TIMEOUT
+    }
+
+schedule.every(10).minutes.do(bg_task)
+
+def run_schedule():
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+schedule_thread = threading.Thread(target=run_schedule)
+schedule_thread.daemon = True
+schedule_thread.start()
+
+
+# bot logic
 
 intents = discord.Intents.default()
 intents.members = True
@@ -52,19 +82,63 @@ async def ping(ctx):
 
 
 @bot.command()
-async def restart(_ctx):
-    os.execl(sys.executable, sys.executable, *sys.argv)
+async def restart(ctx):
+    try:
+        os.execl(sys.executable, sys.executable, *sys.argv)
+    except Exception as e:
+        await ctx.send(str(e))
+
+
+def make_response(text: str, user_id: str):
+    message_structure = user_mem[user_id].chat_history
+    message_structure.append({"role": "user", "content": text})
+
+    response_obj = pipe(
+        message_structure,
+        max_new_tokens=500
+    )
+
+    response = response_obj[0]["generated_text"][-1]["content"]
+    message_structure.append({"role": "assistant", "content": response})
+    user_mem[user_id].chat_history = message_structure
+    user_mem[user_id].last_updated = time.time()
+
+    return response
+
+
+@bot.command()
+async def shop(ctx):
+    try:
+        user_id = ctx.author.id
+        channel_name = ctx.channel.name
+        message_structure = [{"role": "system", "content": SYSTEM_PROMPT}]
+        user_mem[user_id] = UserData(user_id, channel_name, time.time(), message_structure)
+
+        await ctx.send(make_response("", user_id))
+    except Exception as e:
+        await ctx.send(str(e))
 
 
 @bot.event
 async def on_message(message):
-    await bot.process_commands(message)
+    try:
+        await bot.process_commands(message)
 
-    if (message.content.startswith('~')):
-        try:
-            await message.channel.send(make_response(message.content), reference=message)
-        except Exception as e:
-            await message.channel.send(str(e), reference=message)
+        user_id = message.author.id
+        channel_name = message.channel.name
+
+        if user_id == bot.user.id:
+            return
+
+        if user_id not in user_mem:
+            return
+
+        if user_mem[user_id].channel_name != channel_name:
+            return
+
+        await message.channel.send(make_response(message.content, user_id), reference=message)
+    except Exception as e:
+        await message.channel.send(str(e), reference=message)
 
 
 bot.run(token)
