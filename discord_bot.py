@@ -67,9 +67,11 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 
+COMMAND_PREFIX = '!'
+
 bot = commands.Bot(
     intents=intents,
-    command_prefix='!',
+    command_prefix=COMMAND_PREFIX,
     description='A simple Discord bot')
 
 load_dotenv()
@@ -124,8 +126,12 @@ async def on_message(message):
     try:
         await bot.process_commands(message)
 
+        msg_content = message.content
         user_id = message.author.id
         channel_name = message.channel.name
+
+        if msg_content.startswith(COMMAND_PREFIX):
+            return
 
         if user_id == bot.user.id:
             return
@@ -136,7 +142,7 @@ async def on_message(message):
         if user_mem[user_id].channel_name != channel_name:
             return
 
-        await message.channel.send(make_response(message.content, user_id), reference=message)
+        await message.channel.send(make_response(msg_content, user_id), reference=message)
     except Exception as e:
         await message.channel.send(str(e), reference=message)
 
