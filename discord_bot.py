@@ -48,6 +48,7 @@ user_mem: dict[str, UserData] = {}
 MAX_TIMEOUT = 600 #seconds
 
 def bg_task():
+    global user_mem
     now = time.time()
     user_mem = {
         k: v for (k, v) in user_mem.entries()
