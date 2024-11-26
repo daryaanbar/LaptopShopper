@@ -111,17 +111,17 @@ def retrieve(query, embedding_model='all-MiniLM-L6-v2', top_k=3):
     return [kb_chunks[i] for i in indices[0]]
 
 
-def augment_prompt(query, retrieved_docs):
-    context = "\n".join(retrieved_docs)
-    return f"Context:\n{context}\n\nQuery: {query}\nAnswer:"
-
-
-def make_response(text: str, user_id: str) -> str:
-    retrieved_docs = retrieve(text)
-    prompt = augment_prompt(text, retrieved_docs)
-
+def make_response(text: str, user_id: str, augment_query=False) -> str:
     message_structure = user_mem[user_id].chat_history
+    prompt = {"role": "user", "content": text}
     message_structure.append({"role": "user", "content": prompt})
+
+    if augment_query:
+        retrieved_docs = retrieve(text)
+        context = "\n".join(retrieved_docs)
+        augmentation = f"This is scraped info about laptops that might be related to the last user response.\n\n{context}"
+        context_prompt = {"role": "system", "content": augmentation}
+        message_structure.append(context_prompt)
 
     response_obj = pipe(
         message_structure,
@@ -196,7 +196,7 @@ async def on_message(message):
         ):
             return
 
-        await message.channel.send(make_response(msg_content, user_id), reference=message)
+        await message.channel.send(make_response(msg_content, user_id, augment_query=True), reference=message)
     except Exception as e:
         await message.channel.send(str(e), reference=message)
 
