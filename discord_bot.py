@@ -27,7 +27,7 @@ SYSTEM_PROMPT = """
     on user input. You will ask for information about the user's needs
     and use cases as necessary to give the best recommendation possible.
     Assume a user has just invoked you and is expecting an initial response
-    to get them started.
+    to get them started. Assume nothing about the user's requirements at first.
     """
 
 
