@@ -4,10 +4,14 @@ import time
 import threading
 from dataclasses import dataclass
 from dotenv import load_dotenv
+import schedule
 import discord
 from discord.ext import commands
 from transformers import pipeline
-import schedule
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from sentence_transformers import SentenceTransformer
+import numpy as np
+import faiss
 
 
 # init LLM
@@ -18,7 +22,7 @@ pipe = pipeline(
 )
 
 SYSTEM_PROMPT = """
-    You are a discord bot meant to give laptop recommendations based
+    You are a discord bot named LaptopPal meant to give laptop recommendations based
     on user input. You will ask for information about the user's needs
     and use cases as necessary to give the best recommendation possible.
     Assume a user has just invoked you and is expecting an initial response
@@ -61,6 +65,75 @@ schedule_thread.daemon = True
 schedule_thread.start()
 
 
+# load knowledge base
+
+def load_and_split(file_paths, chunk_size=500, chunk_overlap=50):
+    splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    docs = []
+    for file_path in file_paths:
+        with open(file_path, 'r') as f:
+            text = f.read()
+        docs.extend(splitter.split_text(text))
+    return docs
+
+
+def embed_chunks(chunks, embedding_model='all-MiniLM-L6-v2'):
+    model = SentenceTransformer(embedding_model)
+    embeddings = model.encode(chunks)
+    return np.array(embeddings)
+
+
+def build_index(embeddings):
+    index = faiss.IndexFlatL2(embeddings.shape[1])  # L2 distance
+    index.add(embeddings)
+    return index
+
+kb_directory = 'kb'
+
+kb_file_paths = [
+    os.path.join(kb_directory, file) for file in os.listdir(kb_directory)
+    if os.path.isfile(os.path.join(kb_directory, file))
+]
+
+kb_chunks = load_and_split(kb_file_paths)
+kb_embeddings = embed_chunks(kb_chunks)
+kb_index = build_index(kb_embeddings)
+
+
+# message generation
+
+def retrieve(query, embedding_model='all-MiniLM-L6-v2', top_k=5):
+    model = SentenceTransformer(embedding_model)
+    query_embedding = model.encode([query])
+    distances, indices = kb_index.search(query_embedding, top_k)
+    return [kb_chunks[i] for i in indices[0]]
+
+
+def augment_prompt(query, retrieved_docs):
+    context = "\n".join(retrieved_docs)
+    return f"Context:\n{context}\n\nQuery: {query}\nAnswer:"
+
+
+def make_response(text: str, user_id: str) -> str:
+    retrieved_docs = retrieve(text)
+    prompt = augment_prompt(text, retrieved_docs)
+
+    message_structure = user_mem[user_id].chat_history
+    message_structure.append({"role": "user", "content": prompt})
+
+    response_obj = pipe(
+        message_structure,
+        max_new_tokens=500
+    )
+
+    response = response_obj[0]["generated_text"][-1]["content"]
+    message_structure.append({"role": "assistant", "content": response})
+    user_mem[user_id].chat_history = message_structure
+    user_mem[user_id].last_updated = time.time()
+
+    return response
+
+
 # bot logic
 
 intents = discord.Intents.default()
@@ -89,23 +162,6 @@ async def restart(ctx):
         os.execl(sys.executable, sys.executable, *sys.argv)
     except Exception as e:
         await ctx.send(str(e))
-
-
-def make_response(text: str, user_id: str) -> str:
-    message_structure = user_mem[user_id].chat_history
-    message_structure.append({"role": "user", "content": text})
-
-    response_obj = pipe(
-        message_structure,
-        max_new_tokens=500
-    )
-
-    response = response_obj[0]["generated_text"][-1]["content"]
-    message_structure.append({"role": "assistant", "content": response})
-    user_mem[user_id].chat_history = message_structure
-    user_mem[user_id].last_updated = time.time()
-
-    return response
 
 
 @bot.command()
