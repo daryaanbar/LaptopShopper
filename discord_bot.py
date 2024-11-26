@@ -18,7 +18,8 @@ import faiss
 
 pipe = pipeline(
     "text-generation",
-    model="meta-llama/Llama-3.2-1B-Instruct"
+    model="meta-llama/Llama-3.2-1B-Instruct",
+    device=0
 )
 
 SYSTEM_PROMPT = """
