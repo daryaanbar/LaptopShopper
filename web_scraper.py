@@ -6,17 +6,18 @@ from collections import defaultdict
 import numpy as np
 from typing import List, Dict
 import re
+import os
 
 # function to parse each HTML file
 def parse_laptop_file(file_path: str) -> dict:
     with open(file_path, 'r', encoding='utf-8') as file:
         soup = BeautifulSoup(file, 'html.parser')
-        
+
         # extract product details
         name = soup.find('h1').text.strip()
         price = soup.find('p', class_='price').text.strip()
         description = soup.select_one('.product-details > p:nth-of-type(2)').text.strip()
-        
+
         # extract specifications
         specs = {}
         specs_table = soup.find('table', class_='specs-table')
@@ -25,7 +26,7 @@ def parse_laptop_file(file_path: str) -> dict:
                 key = row.find('th').text.strip()
                 value = row.find('td').text.strip()
                 specs[key] = value
-        
+
         # extract overall rating and reviews
         overall_rating = soup.find('div', class_='rating-number').text.strip()
         review_elements = soup.find_all('div', class_='review')
@@ -35,7 +36,7 @@ def parse_laptop_file(file_path: str) -> dict:
             review_text = review.find('p').text.strip()
             review_stars = review.find('div', class_='stars').text.strip()
             reviews.append({'title': review_title, 'text': review_text, 'stars': review_stars})
-        
+
         return {
             'name': name,
             'price': price,
@@ -44,12 +45,12 @@ def parse_laptop_file(file_path: str) -> dict:
             'overall_rating': overall_rating,
             'reviews': reviews
         }
-'''    
+'''
 # function to summarize the data
 def summarize_data(data):
     summary = []
     for laptop in data:
-        
+
         # format specifications and reviews
         specs = "\n".join(f"{key}: {value}" for key, value in laptop['specifications'].items())
         reviews = "\n\n".join(
@@ -58,7 +59,7 @@ def summarize_data(data):
             f"Rating: {review['stars']} stars"
             for review in laptop['reviews']
         )
-        
+
         # build summary
         laptop_summary = (
             f"Model: {laptop['name']}\n"
@@ -71,9 +72,9 @@ def summarize_data(data):
             "\n-----------------------------\n"
         )
         summary.append(laptop_summary)
-    
+
     return "\n".join(summary)
-'''    
+'''
 class LaptopSummarizer:
     def __init__(self):
         self.nlp = spacy.load('en_core_web_sm')
@@ -108,7 +109,7 @@ class LaptopSummarizer:
         for review in reviews:
             blob = TextBlob(review['text'])
             sentiments.append(blob.sentiment.polarity)
-            
+
             # Process each sentence
             doc = self.nlp(review['text'])
             for sent in doc.sents:
@@ -123,28 +124,28 @@ class LaptopSummarizer:
             'key_points': key_points
         }
 
-    
+
     def generate_summary(self, laptop_data: Dict) -> str:
-        #Generate summary 
+        #Generate summary
         # Extract price as float
         price = float(re.sub(r'[^\d.]', '', laptop_data['price']))
-        
+
         # Analyze specifications
         key_specs = self.get_key_specs(laptop_data['specifications'])
-        
+
         # Analyze reviews
         review_analysis = self.analyze_reviews(laptop_data['reviews'])
-        
+
         # Build summary
         summary = []
-        
+
         # Overview section
         summary.append(f"--- {laptop_data['name']} Summary ---\n")
         summary.append(f"Price: ${price:.2f}")
         summary.append(f"Rating: {laptop_data['overall_rating']}/5.0")
         summary.append(f"\nBrief Description:")
         summary.append(laptop_data['description'])
-        
+
         # Key Specifications
         summary.append("\nKey Specifications:")
         for category, specs in key_specs.items():
@@ -152,7 +153,7 @@ class LaptopSummarizer:
                 summary.append(f"\n{category}:")
                 for spec in specs:
                     summary.append(f"- {spec}")
-        
+
         # Review Analysis
         summary.append("\nReview Analysis:")
         sentiment_text = ("Very Positive" if review_analysis['average_sentiment'] > 0.5 else
@@ -160,37 +161,40 @@ class LaptopSummarizer:
                          "Negative" if review_analysis['average_sentiment'] < -0.5 else
                          "Slightly Negative")
         summary.append(f"Overall Sentiment: {sentiment_text}")
-        
+
         if review_analysis['key_points']['positive']:
             summary.append("\nKey Positive Points:")
             for point in review_analysis['key_points']['positive'][:2]:
                 summary.append(f"✓ {point}")
-                
+
         if review_analysis['key_points']['negative']:
             summary.append("\nKey Negative Points:")
             for point in review_analysis['key_points']['negative'][:2]:
                 summary.append(f"✗ {point}")
-        
+
         # Value Assessment
         value_score = float(laptop_data['overall_rating']) / (price / 1000)
         value_assessment = ("Excellent" if value_score > 4 else
                           "Good" if value_score > 3 else
                           "Fair" if value_score > 2 else
                           "Poor")
-        
+
         summary.append(f"\nValue Assessment: {value_assessment} value for money")
-        
+
         return "\n".join(summary)
-        
+
 def main():
     summarizer = LaptopSummarizer()
     files = glob.glob("WebPages/*.html")
-    
-    for file_path in files:
+
+    os.makedirs('kb', exist_ok=True)
+
+    for i, file_path in enumerate(files):
         laptop_data = parse_laptop_file(file_path)
         summary = summarizer.generate_summary(laptop_data)
-        print(summary)
-        print("\n" + "-"*50 + "\n")
+
+        with open(f'kb/{i}.txt', 'w') as f:
+            f.write(f'{summary}\n')
 
 
 
