@@ -103,7 +103,7 @@ kb_index = build_index(kb_embeddings)
 
 # message generation
 
-def retrieve(query, embedding_model='all-MiniLM-L6-v2', top_k=5):
+def retrieve(query, embedding_model='all-MiniLM-L6-v2', top_k=3):
     model = SentenceTransformer(embedding_model)
     query_embedding = model.encode([query])
     distances, indices = kb_index.search(query_embedding, top_k)
