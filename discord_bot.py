@@ -51,7 +51,7 @@ def bg_task():
     global user_mem
     now = time.time()
     user_mem = {
-        k: v for (k, v) in user_mem.entries()
+        k: v for (k, v) in user_mem.items()
         if now - v.last_updated < MAX_TIMEOUT
     }
 
@@ -107,7 +107,7 @@ kb_index = build_index(kb_embeddings)
 def retrieve(query, embedding_model='all-MiniLM-L6-v2', top_k=3):
     model = SentenceTransformer(embedding_model)
     query_embedding = model.encode([query])
-    distances, indices = kb_index.search(query_embedding, top_k)
+    _distances, indices = kb_index.search(query_embedding, top_k)
     return [kb_chunks[i] for i in indices[0]]
 
 
