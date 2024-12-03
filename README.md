@@ -1,5 +1,6 @@
-# LaptopShopper
+# LaptopPal
 This project was made by Andrew Sen, Darya Anbar, and Ethan Ferneyhough CS 6320.
+Demo Link: https://youtu.be/RgvQymKWlTc?si=qj61LW3TwoQbBuTw 
 
 
 ## Project Scope
